@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wasm Benchmark</title>
+    <style>
+      button {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="matrixmultiplybtn">Matrix Multiply</button>
+    <p id="matrixmultiplyjs"></p>
+    <p id="matrixmultiplyrs"></p>
+    <p id="matrixmultiplymut"></p>
+    <button id="matrixtransposebtn">Matrix Transpose</button>
+    <p id="matrixtransposejs"></p>
+    <p id="matrixtransposers"></p>
+    <p id="matrixtransposemut"></p>
+    <button id="vectordotbtn">Vector Dot Product</button>
+    <p id="vectordotjs"></p>
+    <p id="vectordotrs"></p>
+    <p id="vectordotmut"></p>
+    <button id="fftbtn">Fast Fourier Transform</button>
+    <p id="fftjs"></p>
+    <p id="fftrs"></p>
+    <p id="fftmut"></p>
+    <button id="fibonaccibtn">Fibonacci</button>
+    <p id="fibonaccijs"></p>
+    <p id="fibonaccirs"></p>
+    <p id="fibonaccimut"></p>
+    <script type="importmap">
+      {
+        "imports": {
+          "mathjs": "https://esm.sh/mathjs@13.0.0",
+          "rs": "./wasm_benchmark.js"
+        }
+      }
+    </script>
+    <script type="module">
+      import init, {
+        rs_matrix_multiply,
+        rs_matrix_transpose,
+        rs_vector_dot_product,
+        rs_fft,
+        rs_fibonacci,
+      } from 'rs';
+      import * as math from 'mathjs';
+
+      function fibonacci(n) {
+        if (n <= 1) return n;
+        return fibonacci(n - 1) + fibonacci(n - 2);
+      }
+
+      function detectCollision(circle1, circle2) {
+        const dx = circle1.x - circle2.x;
+        const dy = circle1.y - circle2.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < circle1.radius + circle2.radius;
+      }
+
+      const main = async () => {
+        await init();
+
+        function generateMatrix(n, m) {
+          const matrix = [];
+          for (let i = 0; i < n; i++) {
+            const row = [];
+            for (let j = 0; j < m; j++) {
+              row.push(Math.random());
+            }
+            matrix.push(row);
+          }
+          return matrix;
+        }
+
+        function flattenMatrix(matrix) {
+          return matrix.reduce((acc, row) => acc.concat(row), []);
+        }
+
+        matrixmultiplybtn.onclick = () => {
+          const n = 100;
+          const m = 100;
+          const p = 100;
+
+          const a = generateMatrix(n, m);
+          const b = generateMatrix(m, p);
+
+          const startJS = performance.now();
+          const resultJS = math.multiply(a, b);
+          const endJS = performance.now();
+          console.log(resultJS);
+          const jsTime = endJS - startJS;
+          matrixmultiplyjs.innerHTML = `JavaScript: ${jsTime}ms`;
+
+          const aFlat = new Float64Array(flattenMatrix(a));
+          const bFlat = new Float64Array(flattenMatrix(b));
+          const startRS = performance.now();
+          const resultRS = rs_matrix_multiply(aFlat, bFlat, n, m, p);
+          const endRS = performance.now();
+          console.log(resultRS);
+          const rsTime = endRS - startRS;
+          matrixmultiplyrs.innerHTML = `WebAssembly: ${rsTime}ms`;
+          matrixmultiplymut.innerHTML = `JavaScript/WebAssembly: ${jsTime / rsTime}`;
+        };
+
+        matrixtransposebtn.onclick = () => {
+          const n = 100;
+          const m = 100;
+          const p = 100;
+
+          const a = generateMatrix(n, m);
+
+          const startJS = performance.now();
+          const resultJS = math.transpose(a);
+          const endJS = performance.now();
+          console.log(resultJS);
+          const jsTime = endJS - startJS;
+          document.getElementById('matrixtransposejs').innerHTML = `JavaScript: ${jsTime}ms`;
+
+          const aFlat = new Float64Array(flattenMatrix(a));
+          const startRS = performance.now();
+          const resultRS = rs_matrix_transpose(aFlat, n, m);
+          const endRS = performance.now();
+          console.log(resultRS);
+          const rsTime = endRS - startRS;
+          document.getElementById('matrixtransposers').innerHTML = `WebAssembly: ${rsTime}ms`;
+
+          document.getElementById('matrixtransposemut').innerHTML = `JavaScript/WebAssembly: ${
+            jsTime / rsTime
+          }`;
+        };
+
+        vectordotbtn.onclick = () => {
+          const n = 100;
+
+          const a = new Array(n).fill(1);
+          const b = new Array(n).fill(2);
+
+          const startJS = performance.now();
+          const resultJS = math.dot(a, b);
+          const endJS = performance.now();
+          console.log(resultJS);
+          const jsTime = endJS - startJS;
+          document.getElementById('vectordotjs').innerHTML = `JavaScript: ${jsTime}ms`;
+
+          const aF = new Float64Array(a);
+          const bF = new Float64Array(b);
+          const startRS = performance.now();
+          const resultRS = rs_vector_dot_product(aF, bF);
+          const endRS = performance.now();
+          console.log(resultRS);
+          const rsTime = endRS - startRS;
+          document.getElementById('vectordotrs').innerHTML = `WebAssembly: ${rsTime}ms`;
+          vectordotmut.innerHTML = `JavaScript/WebAssembly: ${jsTime / rsTime}`;
+        };
+
+        fftbtn.onclick = () => {
+          const input = Array.from({ length: 1234 }, (_, i) => Math.sin((2 * Math.PI * i) / 1234));
+
+          const inputJS = input.map(v => [v, 0]);
+          const startJS = performance.now();
+          const resultJS = math.fft(inputJS);
+          const endJS = performance.now();
+          console.log(resultJS);
+          const jsTime = endJS - startJS;
+          fftjs.innerHTML = `JavaScript: ${jsTime}ms`;
+
+          const inputRS = new Float64Array(input);
+
+          const startRS = performance.now();
+          const resultRS = rs_fft(inputRS);
+          const endRS = performance.now();
+          console.log(resultRS);
+          const rsTime = endRS - startRS;
+          fftrs.innerHTML = `WebAssembly: ${rsTime}ms`;
+
+          fftmut.innerHTML = `JavaScript/WebAssembly: ${jsTime / rsTime}`;
+        };
+      };
+
+      fibonaccibtn.onclick = () => {
+        const n = 40;
+
+        const startJS = performance.now();
+        const resultJS = fibonacci(n);
+        const endJS = performance.now();
+        console.log(resultJS);
+        const jsTime = endJS - startJS;
+        fibonaccijs.innerHTML = `JavaScript: ${jsTime}ms`;
+
+        const startRS = performance.now();
+        const resultRS = rs_fibonacci(n);
+        const endRS = performance.now();
+        console.log(resultRS);
+        const rsTime = endRS - startRS;
+        fibonaccirs.innerHTML = `WebAssembly: ${rsTime}ms`;
+
+        fibonaccimut.innerHTML = `JavaScript/WebAssembly: ${jsTime / rsTime}`;
+      };
+
+      main();
+    </script>
+  </body>
+</html>

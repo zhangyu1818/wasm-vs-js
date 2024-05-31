@@ -1,0 +1,14 @@
+{
+  "name": "wasm-benchmark",
+  "version": "0.1.0",
+  "files": [
+    "wasm_benchmark_bg.wasm",
+    "wasm_benchmark.js",
+    "wasm_benchmark.d.ts"
+  ],
+  "module": "wasm_benchmark.js",
+  "types": "wasm_benchmark.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
