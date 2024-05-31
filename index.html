@@ -11,26 +11,9 @@
     </style>
   </head>
   <body>
-    <button id="matrixmultiplybtn">Matrix Multiply</button>
-    <p id="matrixmultiplyjs"></p>
-    <p id="matrixmultiplyrs"></p>
-    <p id="matrixmultiplymut"></p>
-    <button id="matrixtransposebtn">Matrix Transpose</button>
-    <p id="matrixtransposejs"></p>
-    <p id="matrixtransposers"></p>
-    <p id="matrixtransposemut"></p>
-    <button id="vectordotbtn">Vector Dot Product</button>
-    <p id="vectordotjs"></p>
-    <p id="vectordotrs"></p>
-    <p id="vectordotmut"></p>
-    <button id="fftbtn">Fast Fourier Transform</button>
-    <p id="fftjs"></p>
-    <p id="fftrs"></p>
-    <p id="fftmut"></p>
-    <button id="fibonaccibtn">Fibonacci</button>
-    <p id="fibonaccijs"></p>
-    <p id="fibonaccirs"></p>
-    <p id="fibonaccimut"></p>
+    <div id="container">
+      <p>loading...</p>
+    </div>
     <script type="importmap">
       {
         "imports": {
@@ -54,15 +37,29 @@
         return fibonacci(n - 1) + fibonacci(n - 2);
       }
 
-      function detectCollision(circle1, circle2) {
-        const dx = circle1.x - circle2.x;
-        const dy = circle1.y - circle2.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance < circle1.radius + circle2.radius;
-      }
-
       const main = async () => {
         await init();
+
+        container.innerHTML = `<button id="matrixmultiplybtn">Matrix Multiply</button>
+    <p id="matrixmultiplyjs"></p>
+    <p id="matrixmultiplyrs"></p>
+    <p id="matrixmultiplymut"></p>
+    <button id="matrixtransposebtn">Matrix Transpose</button>
+    <p id="matrixtransposejs"></p>
+    <p id="matrixtransposers"></p>
+    <p id="matrixtransposemut"></p>
+    <button id="vectordotbtn">Vector Dot Product</button>
+    <p id="vectordotjs"></p>
+    <p id="vectordotrs"></p>
+    <p id="vectordotmut"></p>
+    <button id="fftbtn">Fast Fourier Transform</button>
+    <p id="fftjs"></p>
+    <p id="fftrs"></p>
+    <p id="fftmut"></p>
+    <button id="fibonaccibtn">Fibonacci</button>
+    <p id="fibonaccijs"></p>
+    <p id="fibonaccirs"></p>
+    <p id="fibonaccimut"></p>`;
 
         function generateMatrix(n, m) {
           const matrix = [];
@@ -179,26 +176,26 @@
 
           fftmut.innerHTML = `JavaScript/WebAssembly: ${jsTime / rsTime}`;
         };
-      };
 
-      fibonaccibtn.onclick = () => {
-        const n = 40;
+        fibonaccibtn.onclick = () => {
+          const n = 40;
 
-        const startJS = performance.now();
-        const resultJS = fibonacci(n);
-        const endJS = performance.now();
-        console.log(resultJS);
-        const jsTime = endJS - startJS;
-        fibonaccijs.innerHTML = `JavaScript: ${jsTime}ms`;
+          const startJS = performance.now();
+          const resultJS = fibonacci(n);
+          const endJS = performance.now();
+          console.log(resultJS);
+          const jsTime = endJS - startJS;
+          fibonaccijs.innerHTML = `JavaScript: ${jsTime}ms`;
 
-        const startRS = performance.now();
-        const resultRS = rs_fibonacci(n);
-        const endRS = performance.now();
-        console.log(resultRS);
-        const rsTime = endRS - startRS;
-        fibonaccirs.innerHTML = `WebAssembly: ${rsTime}ms`;
+          const startRS = performance.now();
+          const resultRS = rs_fibonacci(n);
+          const endRS = performance.now();
+          console.log(resultRS);
+          const rsTime = endRS - startRS;
+          fibonaccirs.innerHTML = `WebAssembly: ${rsTime}ms`;
 
-        fibonaccimut.innerHTML = `JavaScript/WebAssembly: ${jsTime / rsTime}`;
+          fibonaccimut.innerHTML = `JavaScript/WebAssembly: ${jsTime / rsTime}`;
+        };
       };
 
       main();
